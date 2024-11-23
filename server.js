@@ -48,8 +48,8 @@ const app = express();
 // CORS configuration
 app.use(cors({
   origin: [
-    'https://resume-builder-client-auth.vercel.app',
-    'http://localhost:5173', // For local development
+    process.env.CLIENT_URL,
+    'http://localhost:5173'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -59,13 +59,20 @@ app.use(cors({
 app.use(express.json());
 app.use(morgan('dev'));
 
+// API routes
+app.use('/api/users', userRoutes);
+app.use('/api/resumes', resumeRoutes);
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-app.use('/api/users', userRoutes);
-app.use('/api/resumes', resumeRoutes);
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Something went wrong!' });
+});
 
 const PORT = process.env.PORT || 5000;
 
