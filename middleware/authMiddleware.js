@@ -24,6 +24,7 @@
 // export { protect };
 
 //23-11-24
+//server/middleware/authMiddleware.js
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
 
