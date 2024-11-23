@@ -61,14 +61,17 @@ const generateToken = (id) => {
   });
 };
 
-// Updated to use id_token
 const googleAuth = async (req, res) => {
   try {
-    const { id_token } = req.body; // Updated to expect id_token
+    const { id_token } = req.body;
+    console.log('Received id_token:', id_token); // Add this log
+
     const ticket = await client.verifyIdToken({
       idToken: id_token,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
+
+    console.log('Ticket verified successfully'); // Add this log
 
     const { name, email, sub: googleId } = ticket.getPayload();
 
@@ -82,15 +85,18 @@ const googleAuth = async (req, res) => {
       });
     }
 
+    const token = generateToken(user._id);
+    console.log('Generated token:', token); // Add this log
+
     res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
-      token: generateToken(user._id),
+      token,
     });
   } catch (error) {
-    console.error('Google authentication error:', error.message);
-    res.status(401).json({ message: 'Invalid token' });
+    console.error('Google authentication error:', error);
+    res.status(401).json({ message: 'Invalid token', error: error.message });
   }
 };
 
