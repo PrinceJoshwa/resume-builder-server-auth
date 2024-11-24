@@ -63,17 +63,19 @@ const generateToken = (id) => {
 
 const googleAuth = async (req, res) => {
   try {
-    const { id_token } = req.body;
-    console.log('Received id_token:', id_token); // Add this log
-
-    const ticket = await client.verifyIdToken({
-      idToken: id_token,
-      audience: process.env.GOOGLE_CLIENT_ID,
+    const { token } = req.body;
+    
+    // Verify the access token with Google
+    const response = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo`, {
+      headers: { Authorization: `Bearer ${token}` }
     });
-
-    console.log('Ticket verified successfully'); // Add this log
-
-    const { name, email, sub: googleId } = ticket.getPayload();
+    
+    if (!response.ok) {
+      throw new Error('Failed to verify token');
+    }
+    
+    const userData = await response.json();
+    const { name, email, sub: googleId } = userData;
 
     let user = await User.findOne({ email });
 
@@ -85,18 +87,15 @@ const googleAuth = async (req, res) => {
       });
     }
 
-    const token = generateToken(user._id);
-    console.log('Generated token:', token); // Add this log
-
     res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
-      token,
+      token: generateToken(user._id),
     });
   } catch (error) {
-    console.error('Google authentication error:', error);
-    res.status(401).json({ message: 'Invalid token', error: error.message });
+    console.error('Google Auth Error:', error);
+    res.status(401).json({ message: 'Invalid token' });
   }
 };
 
