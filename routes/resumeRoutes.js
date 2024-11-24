@@ -10,7 +10,7 @@
 
 //23-11-24
 import express from 'express';
-import { createResume, getResumes, getResumeById } from '../controllers/resumeController.js';
+import { createResume, getResumes, getResumeById, deleteResume } from '../controllers/resumeController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -20,6 +20,8 @@ router.route('/')
   .get(protect, getResumes);
 
 router.route('/:id')
-  .get(protect, getResumeById);
+  .get(protect, getResumeById)
+  .delete(protect, deleteResume);
+
 
 export default router;

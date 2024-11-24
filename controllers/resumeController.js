@@ -35,11 +35,59 @@
 
 //23-11-24
 
+// import Resume from '../models/resumeModel.js';
+
+// // @desc    Create a resume
+// // @route   POST /api/resumes
+// // @access  Private
+// const createResume = async (req, res) => {
+//   try {
+//     const resume = new Resume({
+//       user: req.user._id,
+//       name: req.body.name,
+//       data: req.body.data
+//     });
+
+//     const createdResume = await resume.save();
+//     res.status(201).json(createdResume);
+//   } catch (error) {
+//     res.status(400).json({ message: error.message });
+//   }
+// };
+
+// // @desc    Get user resumes
+// // @route   GET /api/resumes
+// // @access  Private
+// const getResumes = async (req, res) => {
+//   try {
+//     const resumes = await Resume.find({ user: req.user._id });
+//     res.json(resumes);
+//   } catch (error) {
+//     res.status(400).json({ message: error.message });
+//   }
+// };
+
+// // @desc    Get resume by ID
+// // @route   GET /api/resumes/:id
+// // @access  Private
+// const getResumeById = async (req, res) => {
+//   try {
+//     const resume = await Resume.findById(req.params.id);
+//     if (resume && resume.user.toString() === req.user._id.toString()) {
+//       res.json(resume);
+//     } else {
+//       res.status(404).json({ message: 'Resume not found' });
+//     }
+//   } catch (error) {
+//     res.status(400).json({ message: error.message });
+//   }
+// };
+
+// export { createResume, getResumes, getResumeById };
+
+//gpt
 import Resume from '../models/resumeModel.js';
 
-// @desc    Create a resume
-// @route   POST /api/resumes
-// @access  Private
 const createResume = async (req, res) => {
   try {
     const resume = new Resume({
@@ -55,21 +103,15 @@ const createResume = async (req, res) => {
   }
 };
 
-// @desc    Get user resumes
-// @route   GET /api/resumes
-// @access  Private
 const getResumes = async (req, res) => {
   try {
-    const resumes = await Resume.find({ user: req.user._id });
+    const resumes = await Resume.find({ user: req.user._id }).sort({ createdAt: -1 });
     res.json(resumes);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
 
-// @desc    Get resume by ID
-// @route   GET /api/resumes/:id
-// @access  Private
 const getResumeById = async (req, res) => {
   try {
     const resume = await Resume.findById(req.params.id);
@@ -83,4 +125,23 @@ const getResumeById = async (req, res) => {
   }
 };
 
-export { createResume, getResumes, getResumeById };
+const deleteResume = async (req, res) => {
+  try {
+    const resume = await Resume.findById(req.params.id);
+    
+    if (!resume) {
+      return res.status(404).json({ message: 'Resume not found' });
+    }
+
+    if (resume.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to delete this resume' });
+    }
+
+    await resume.deleteOne();
+    res.json({ message: 'Resume deleted successfully' });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export { createResume, getResumes, getResumeById, deleteResume };
